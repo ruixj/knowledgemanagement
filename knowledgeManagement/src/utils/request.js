@@ -2,6 +2,7 @@ import axios from 'axios';
 import { message } from 'ant-design-vue';
 import router from '../router';
 import { useAuthStore } from '../utils/auth';
+import { useBackendsStore } from '../state/appstate';
 
  
 const httpService = axios.create({
@@ -12,6 +13,10 @@ const httpService = axios.create({
 
 httpService.interceptors.request.use(
   (config) => {
+    // 动态设置 baseURL
+    const backendsStore = useBackendsStore();
+    config.baseURL = config.baseURL || backendsStore.endpoints.baseUrl;
+
     // 从请求配置中获取 loading 状态控制函数（组件级）
     if (config.loading?.show) {
       config.loading.show(true); // 开启加载状态

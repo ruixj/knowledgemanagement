@@ -11,4 +11,12 @@ public interface SysKMMapper {
     List<Map<String,Object>> loadKMByPage(Map map);
 
     long loadKMByPageCount(Map map);
+
+    int saveFile(Map<String,Object> params);
+
+    List<Map<String,Object>> loadFilesByKB(Map<String,Object> params);
+
+    long loadFilesByKBCount(Map<String,Object> params);
+
+    int deleteFileById(Map<String,Object> params);
 }

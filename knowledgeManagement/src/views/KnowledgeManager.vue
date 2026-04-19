@@ -136,16 +136,25 @@
   </div>
 </template>
 <script  >
-import { ref, reactive, computed, onMounted,watch  } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
+import { useRouter } from 'vue-router'
+import { message } from 'ant-design-vue'
+import { loadKnowledgeBaseByPage, createKnowledgeBase } from '../api/service'
+import { useAuthStore } from '../utils/auth'
+import { useCurrentKBStore } from '../state/appstate'
 
 
 export default {
   name: 'KnowledgeManager',
   setup(){
+    const router = useRouter()
+    const authStore = useAuthStore()
+    const kbStore = useCurrentKBStore()
+
     // 响应式数据
     const knowledgeList = ref([]);
     const currentPage = ref(1);
-    const total = ref(50);
+    const total = ref(0);
     const pageSize = ref(10);
     const createModalVisible = ref(false);
     const creating = ref(false);
@@ -175,26 +184,29 @@ export default {
     // 方法
     const loadKnowledgeList = async () => {
         loading.value = true;
-        
-        // 模拟API调用延迟
-        await new Promise(resolve => setTimeout(resolve, 800));
-        
-        const startIndex = (currentPage.value - 1) * pageSize.value;
-        const mockData = [];
-        
-        for (let i = 1; i <= pageSize.value; i++) {
-        mockData.push({
-            id: startIndex + i,
-            title: `知识库 ${startIndex + i}`,
-            description: `这是知识库 ${startIndex + i} 的描述信息，包含各种相关文档和资料。`,
-            creator: `用户${(startIndex + i) % 5 + 1}`,
-            updateTime: `2023-${String((startIndex + i) % 12 + 1).padStart(2, '0')}-${String((startIndex + i) % 28 + 1).padStart(2, '0')}`,
-            docCount: Math.floor(Math.random() * 100) + 10
-        });
+        try {
+            const resdata = await loadKnowledgeBaseByPage({
+                page: (currentPage.value - 1) * pageSize.value,
+                pageSize: pageSize.value,
+                name: searchKeyword.value || undefined,
+            });
+            if (resdata && resdata.data) {
+                const pageData = resdata.data.page || [];
+                knowledgeList.value = pageData.map(item => ({
+                    id: item.id,
+                    title: item.name,
+                    description: item.description || '',
+                    creator: item.creatorName || item.created_by || '',
+                    updateTime: item.updated_at || item.created_at || '',
+                    docCount: item.file_count || 0,
+                }));
+                total.value = Number(resdata.data.total) || 0;
+            }
+        } catch (e) {
+            console.error(e);
+        } finally {
+            loading.value = false;
         }
-        
-        knowledgeList.value = mockData;
-        loading.value = false;
     };
 
     const handleSearch = (value) => {
@@ -209,48 +221,35 @@ export default {
 
     const handleCreateOk = async () => {
         if (!createForm.title.trim()) {
-        // 实际应用中应该使用antd的message组件提示
-        alert('请输入知识库名称');
-        return;
+            message.warning('请输入知识库名称');
+            return;
         }
         
         creating.value = true;
-        
-        // 模拟API调用延迟
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        
-        console.log('创建知识库:', createForm);
-        
-        // 实际应用中这里应该调用API创建知识库
-        creating.value = false;
-        createModalVisible.value = false;
-        
-        // 重置表单
-        Object.assign(createForm, {
-        title: '',
-        description: '',
-        visibility: 'public'
-        });
-        
-        // 刷新列表
-        loadKnowledgeList();
+        try {
+            await createKnowledgeBase({
+                name: createForm.title,
+                description: createForm.description,
+            });
+            message.success('知识库创建成功');
+            createModalVisible.value = false;
+            Object.assign(createForm, { title: '', description: '', visibility: 'public' });
+            loadKnowledgeList();
+        } catch(e) {
+            console.error(e);
+        } finally {
+            creating.value = false;
+        }
     };
 
     const handleCreateCancel = () => {
         createModalVisible.value = false;
-        
-        // 重置表单
-        Object.assign(createForm, {
-        title: '',
-        description: '',
-        visibility: 'public'
-        });
+        Object.assign(createForm, { title: '', description: '', visibility: 'public' });
     };
 
     const viewKnowledge = (item) => {
-        console.log('查看知识库:', item);
-        // 实际应用中这里应该跳转到知识库详情页面
-        alert(`查看知识库: ${item.title}`);
+        kbStore.setCurrentKB({ id: item.id, name: item.title })
+        router.push({ name: 'KnowledgeDetail' })
     };
 
     const handlePageChange = (page) => {

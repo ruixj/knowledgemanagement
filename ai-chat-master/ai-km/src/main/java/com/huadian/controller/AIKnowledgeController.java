@@ -44,8 +44,6 @@ public class AIKnowledgeController {
             Map user  = UserContext.getUser();
             if (action.equals("createKnowledgeBase")) {
 
-                //String name          = (String) map.get("name");
-                //String description   = (String) map.get("description");
                 String userId = (String)user.get("ryid");
                 String username = (String)user.get("username");
                 map.put("created_by",userId);
@@ -61,6 +59,24 @@ public class AIKnowledgeController {
                 Map<String,Object> kmPage = knowledgeService.loadKnowledgeBaseByPage(map);
                 ModelMap ret = ErrorUtil.retErrMsg(ErrorConstant.SUCCESS, kmPage);
                 return ret;
+            }
+            if (action.equals("loadFilesByKnowledgeBase")) {
+                Map<String,Object> params = new HashMap<>();
+                params.put("knowledge_base_id", map.get("knowledge_base_id"));
+                params.put("original_name", map.get("original_name"));
+                int page = map.get("page") != null ? ((Number) map.get("page")).intValue() : 1;
+                int pageSize = map.get("pageSize") != null ? ((Number) map.get("pageSize")).intValue() : 10;
+                params.put("offset", (page - 1) * pageSize);
+                params.put("pageSize", pageSize);
+                Map<String,Object> result = knowledgeService.loadFilesByKB(params);
+                return ErrorUtil.retErrMsg(ErrorConstant.SUCCESS, result);
+            }
+            if (action.equals("deleteFile")) {
+                Map<String,Object> params = new HashMap<>();
+                params.put("id", map.get("id"));
+                params.put("uploaded_by", (String) user.get("ryid"));
+                knowledgeService.deleteFileById(params);
+                return ErrorUtil.retErrMsg(ErrorConstant.SUCCESS, "文件删除成功");
             }
             else {
                 throw new BaseException2("invalid.action.error", new Object[]{action});
@@ -95,6 +111,10 @@ public class AIKnowledgeController {
     ) {
         Map result = new HashMap();
         ModelMap ret = ErrorUtil.retErrMsg(ErrorConstant.SUCCESS, result);
+        Map user = UserContext.getUser();
+        String uploadedBy = user != null ? (String) user.get("ryid") : "";
+        Object knowledgeBaseId = map.get("knowledge_base_id");
+
         if (isMultipartRequest(request))
         {
             MultipartHttpServletRequest multipartHttpServletRequest = (MultipartHttpServletRequest) request;
@@ -108,6 +128,24 @@ public class AIKnowledgeController {
                     for (MultipartFile file: files){
                         String serverPath = fileService.storeFile(file);
                         result.put(file.getOriginalFilename(), serverPath);
+
+                        if (knowledgeBaseId != null) {
+                            Map<String,Object> fileParams = new HashMap<>();
+                            fileParams.put("name", file.getOriginalFilename());
+                            fileParams.put("original_name", file.getOriginalFilename());
+                            String ext = "";
+                            String origName = file.getOriginalFilename();
+                            if (origName != null && origName.contains(".")) {
+                                ext = origName.substring(origName.lastIndexOf('.') + 1).toUpperCase();
+                            }
+                            fileParams.put("file_type", ext);
+                            fileParams.put("mime_type", file.getContentType());
+                            fileParams.put("size", file.getSize());
+                            fileParams.put("storage_path", serverPath);
+                            fileParams.put("uploaded_by", uploadedBy);
+                            fileParams.put("knowledge_base_id", knowledgeBaseId);
+                            knowledgeService.saveFile(fileParams);
+                        }
                     }
                 } catch (Exception ex) {
                     throw new BaseException2(ErrorConstant.FAILED_TO_SAVEFILE, ex, new String[]{fileName});

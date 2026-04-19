@@ -29,5 +29,16 @@ public class AuthController {
             throw new BaseException2(ErrorConstant.USER_OR_PWD_ERR);
         }
     }
+
+    @PostMapping("/register")
+    public ModelMap register(@RequestBody Map map) {
+        String username = (String) map.get("username");
+        String password = (String) map.get("password");
+        if (username == null || username.isBlank() || password == null || password.isBlank()) {
+            throw new BaseException2(ErrorConstant.USER_OR_PWD_ERR);
+        }
+        loginService.register(username, password);
+        return ErrorUtil.retErrMsg(ErrorConstant.SUCCESS, "注册成功");
+    }
 }
 

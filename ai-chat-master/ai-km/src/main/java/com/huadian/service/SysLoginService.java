@@ -9,6 +9,8 @@ import java.util.Map;
 public interface SysLoginService {
 	
 	Map Login( String loginName, String password);
+
+	void register(String username, String password);
 	
 	void exit(String loginId,String userId);
 

@@ -29,4 +29,19 @@
     and delete_flg=0
   </select>
 
+  <select id="selectByRealNameAndPwd" resultMap="BaseResultMap">
+    select ryid,
+           real_name userName,
+           `password`
+    from sys_user
+    where real_name = #{realName}
+      and `password` = #{password}
+      and delete_flg = 0
+  </select>
+
+  <insert id="insertUser" parameterType="java.util.Map">
+    INSERT INTO sys_user (ryid, real_name, birthday, `password`, delete_flg)
+    VALUES (#{ryid}, #{real_name}, '2000-01-01', #{password}, 0)
+  </insert>
+
 </mapper>

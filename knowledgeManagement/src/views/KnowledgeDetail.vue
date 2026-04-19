@@ -6,7 +6,7 @@
             <!-- 左侧面板 -->
             <div class="left-panel">
                 <div class="knowledge-title">
-                    <h2>产品知识库</h2>
+                    <h2>{{ currentKB?.name || '知识库' }}</h2>
                 </div>
                 <div class="button-group">
                     <a-button type="primary" class="custom-btn" @click="gotoKnowledgeManager('fileManager' )">
@@ -36,7 +36,11 @@
 
 <script setup>
 import router from '../router';
-import FileManager from './FileManager.vue';
+import { useCurrentKBStore } from '../state/appstate';
+import { storeToRefs } from 'pinia';
+
+const kbStore = useCurrentKBStore()
+const { currentKB } = storeToRefs(kbStore)
 
 function gotoKnowledgeManager(routerName) {  
     router.push({name:routerName}) 

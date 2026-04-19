@@ -25,7 +25,8 @@
   </insert>
 
    <select id="loadKMByPage"  parameterType="java.util.Map" resultType="java.util.Map">
-       SELECT  name,
+       SELECT  sys_ai_knowledge_bases.id,
+               name,
                description,
                created_at,
                updated_at,
@@ -67,42 +68,51 @@
            ORDER BY ${orderBy}
        </if>
    </select>
-   <select id="loadKMByPageCount"  parameterType="java.util.Map" resultType="long">
-        SELECT  count(*)
-        FROM  sys_ai_knowledge_bases
-        JOIN
-        (
-        SELECT
-        id
-        FROM sys_ai_knowledge_bases kmb
-        WHERE  1 = 1
-        <if test="name != null and name != ''.toString()">
-            and name like concat('%',#{name},'%')
-        </if>
-        <if test="owner != null and owner != ''.toString()">
-            and created_by = #{owner}
-        </if>
-        <choose>
-            <when  test="orderBy != null and orderBy != ''">
-                ORDER BY ${orderBy}
-            </when>
-            <otherwise >
-                ORDER BY id
-            </otherwise>
-        </choose>
-        LIMIT #{page},#{pageSize}
-        ) As tmp on sys_ai_knowledge_bases.id = tmp.id
-       JOIN sys_user on sys_user.ryid = sys_ai_knowledge_bases.created_by
-        WHERE 1 = 1
-        <if test="name != null and name != ''.toString()">
-            and name like concat('%',#{name},'%')
-        </if>
-        <if test="owner != null and owner != ''.toString()">
-            and created_by = #{owner}
-        </if>
-        <if test="orderBy != null and orderBy != ''">
-            ORDER BY ${orderBy}
-        </if>
-    </select>
+
+   <select id="loadKMByPageCount" parameterType="java.util.Map" resultType="long">
+       SELECT count(*)
+       FROM sys_ai_knowledge_bases
+       JOIN sys_user ON sys_user.ryid = sys_ai_knowledge_bases.created_by
+       WHERE 1 = 1
+       <if test="name != null and name != ''.toString()">
+           AND name LIKE CONCAT('%', #{name}, '%')
+       </if>
+       <if test="owner != null and owner != ''.toString()">
+           AND created_by = #{owner}
+       </if>
+   </select>
+
+   <insert id="saveFile" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="id">
+       INSERT INTO sys_ai_files (name, original_name, file_type, mime_type, size, storage_path, status, uploaded_by, knowledge_base_id)
+       VALUES (#{name}, #{original_name}, #{file_type}, #{mime_type}, #{size}, #{storage_path}, 'active', #{uploaded_by}, #{knowledge_base_id})
+   </insert>
+
+   <select id="loadFilesByKB" parameterType="java.util.Map" resultType="java.util.Map">
+       SELECT id, name, original_name, file_type, mime_type, size, storage_path, status, uploaded_at, uploaded_by
+       FROM sys_ai_files
+       WHERE knowledge_base_id = #{knowledge_base_id}
+         AND status != 'deleted'
+         <if test="original_name != null and original_name != ''">
+             AND original_name LIKE CONCAT('%', #{original_name}, '%')
+         </if>
+       ORDER BY uploaded_at DESC
+       LIMIT #{offset}, #{pageSize}
+   </select>
+
+   <select id="loadFilesByKBCount" parameterType="java.util.Map" resultType="long">
+       SELECT count(*)
+       FROM sys_ai_files
+       WHERE knowledge_base_id = #{knowledge_base_id}
+         AND status != 'deleted'
+         <if test="original_name != null and original_name != ''">
+             AND original_name LIKE CONCAT('%', #{original_name}, '%')
+         </if>
+   </select>
+
+   <update id="deleteFileById" parameterType="java.util.Map">
+       UPDATE sys_ai_files SET status = 'deleted'
+       WHERE id = #{id}
+         AND uploaded_by = #{uploaded_by}
+   </update>
 
 </mapper>
