@@ -1,0 +1,28 @@
+spring:
+  ai:
+    model:
+      embedding: openai
+      chat: openai
+    openai:
+      api-key: sk-zvdzfGVHwKtwnt82eLTOeisX6iOn0co9vo4TtRpZnT5FgxWs
+      base-url: https://api.hunyuan.cloud.tencent.com
+      chat:
+        options:
+          model: hunyuan-turbos-latest
+          temperature: 0
+      embedding:
+        options:
+          model: hunyuan-embedding
+          dimensions: 1024
+#    vectorstore:
+#      type: milvus
+#      milvus:
+#        initialize-schema: true
+#        databaseName: "default"
+#        collectionName: "test_collection1"
+#        embeddingDimension: 1024
+#        indexType: IVF_FLAT
+#        metricType: COSINE
+#        client:
+#          host: 172.31.121.86
+#          port: 19530

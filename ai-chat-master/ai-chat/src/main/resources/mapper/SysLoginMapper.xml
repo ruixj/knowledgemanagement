@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huadian.dao.SysLoginMapper" >
+  <resultMap id="BaseResultMap" type="com.huadian.bean.SysLogin" >
+    <id column="id" property="id" jdbcType="INTEGER" />
+    <result column="login_id" property="loginId" jdbcType="VARCHAR" />
+    <result column="token" property="token" jdbcType="VARCHAR" />
+    <result column="uuid" property="uuid" jdbcType="VARCHAR" />
+    <result column="exptime" property="exptime" jdbcType="TIMESTAMP" />
+    <result column="source" property="source" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <select id="selectById" resultMap="BaseResultMap" parameterType="java.lang.String">
+  	select * from sys_login where uuid=#{uuid}
+  </select>
+  <delete id="deleteById" parameterType="java.lang.Integer">
+   	delete from sys_login where id=#{id}
+  </delete>
+  <update id="updateExpTime" parameterType="com.huadian.bean.SysLogin" >
+  		update sys_login set exptime=#{exptime,jdbcType=TIMESTAMP},source=#{source,jdbcType=VARCHAR} where id=#{id,jdbcType=INTEGER}
+  </update>
+</mapper>

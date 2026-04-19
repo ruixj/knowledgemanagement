@@ -1,0 +1,22 @@
+spring:
+  datasource:
+#    driverClassName: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://127.0.0.1:3306/hddj?serverTimezone=GMT%2B8&allowMultiQueries=true&useSSL=false&autoReconnect=true&failOverReadOnly=false
+#    username: root
+#    password: root@123
+    mysqlds:
+       driver-class-name: com.mysql.cj.jdbc.Driver
+       jdbc-url: jdbc:mysql://222.199.135.43:3306/hddj?serverTimezone=GMT%2B8&allowMultiQueries=true&useSSL=false&autoReconnect=true&failOverReadOnly=false
+       username: djai
+       password: Djai@123
+    pgds:
+       driver-class-name: org.postgresql.Driver
+       jdbc-url: jdbc:postgresql://222.199.135.43:5432/aichat?currentSchema=public&connectTimeout=60&socketTimeout=60
+       username: djai
+       password: djai@123
+mybatis:
+  mapper-locations: classpath:mapper/**/*Mapper.xml
+  type-aliases-package: com.huadian.bean
+  configuration:
+     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+     call-setters-on-nulls: true

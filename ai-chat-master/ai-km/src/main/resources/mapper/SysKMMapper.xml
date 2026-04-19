@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huadian.dao.SysKMMapper" >
+
+   <insert id="createKM" parameterType="java.util.Map" >
+      INSERT INTO sys_ai_knowledge_bases(
+      name,
+      <trim suffixOverrides=",">
+          <if test="description != null and description != ''">description,</if>
+          <if test="created_at != null and created_at != ''">created_at,</if>
+          <if test="updated_at != null">updated_at,</if>
+          <if test="created_by != null">created_by,</if>
+          <if test="is_active != null">is_active,</if>
+      </trim>
+      ) VALUES (
+      #{name},
+      <trim suffixOverrides=",">
+          <if test="description != null and description != ''">#{description},</if>
+          <if test="created_at != null and email != ''">#{created_at},</if>
+          <if test="updated_at != null">#{updated_at},</if>
+          <if test="created_by != null">#{created_by},</if>
+          <if test="is_active != null">#{is_active},</if>
+      </trim>
+      )
+  </insert>
+
+   <select id="loadKMByPage"  parameterType="java.util.Map" resultType="java.util.Map">
+       SELECT  name,
+               description,
+               created_at,
+               updated_at,
+               created_by,
+               sys_user.real_name as creatorName,
+               file_count
+       FROM  sys_ai_knowledge_bases
+         JOIN
+          (
+             SELECT
+                id
+             FROM sys_ai_knowledge_bases kmb
+             WHERE  1 = 1
+               <if test="name != null and name != ''.toString()">
+                   and name like concat('%',#{name},'%')
+               </if>
+               <if test="owner != null and owner != ''.toString()">
+                   and created_by = #{owner}
+               </if>
+       <choose>
+               <when  test="orderBy != null and orderBy != ''">
+                   ORDER BY ${orderBy}
+               </when>
+               <otherwise >
+                   ORDER BY id
+               </otherwise>
+       </choose>
+             LIMIT #{page},#{pageSize}
+          ) As tmp on sys_ai_knowledge_bases.id = tmp.id
+        JOIN sys_user on sys_user.ryid = sys_ai_knowledge_bases.created_by
+       WHERE 1 = 1
+       <if test="name != null and name != ''.toString()">
+           and name like concat('%',#{name},'%')
+       </if>
+       <if test="owner != null and owner != ''.toString()">
+           and created_by = #{owner}
+       </if>
+       <if test="orderBy != null and orderBy != ''">
+           ORDER BY ${orderBy}
+       </if>
+   </select>
+   <select id="loadKMByPageCount"  parameterType="java.util.Map" resultType="long">
+        SELECT  count(*)
+        FROM  sys_ai_knowledge_bases
+        JOIN
+        (
+        SELECT
+        id
+        FROM sys_ai_knowledge_bases kmb
+        WHERE  1 = 1
+        <if test="name != null and name != ''.toString()">
+            and name like concat('%',#{name},'%')
+        </if>
+        <if test="owner != null and owner != ''.toString()">
+            and created_by = #{owner}
+        </if>
+        <choose>
+            <when  test="orderBy != null and orderBy != ''">
+                ORDER BY ${orderBy}
+            </when>
+            <otherwise >
+                ORDER BY id
+            </otherwise>
+        </choose>
+        LIMIT #{page},#{pageSize}
+        ) As tmp on sys_ai_knowledge_bases.id = tmp.id
+       JOIN sys_user on sys_user.ryid = sys_ai_knowledge_bases.created_by
+        WHERE 1 = 1
+        <if test="name != null and name != ''.toString()">
+            and name like concat('%',#{name},'%')
+        </if>
+        <if test="owner != null and owner != ''.toString()">
+            and created_by = #{owner}
+        </if>
+        <if test="orderBy != null and orderBy != ''">
+            ORDER BY ${orderBy}
+        </if>
+    </select>
+
+</mapper>

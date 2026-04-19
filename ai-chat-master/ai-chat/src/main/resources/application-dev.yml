@@ -1,0 +1,113 @@
+spring:
+  application:
+    name: ai-chat
+  main:
+    web-application-type: servlet
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 100MB
+
+  config:
+    import:
+      - db.yml
+      - ai.yml
+      - redis.yml
+
+  messages:
+    # 国际化资源文件路径
+    basename: i18n/messages
+
+
+  # 添加Spring AI OpenAI相关配置
+  # 添加Spring AI Ollama相关配置
+#  ai:
+#    ollama:
+#      base-url: http://localhost:11434
+#      # 聊天模型配置
+#      chat:
+#        options:
+#          model: deepseek-r1:7b
+#          temperature: 0.7
+#          num-g-p-u: 1
+#      # 嵌入模型配置
+#      embedding:
+#        options:
+#          model: nomic-embed-text:latest
+#      init:
+#        chat:
+#          additional-models:
+#            - qwen2.5
+  # 添加Swagger配置
+
+
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+
+server:
+  port: 8080
+
+# springdoc-openapi项目配置
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.wanganui.controller
+# knife4j的增强配置，不需要增强可以不配
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+# Milvus配置
+#milvus:
+#  host: 172.31.121.86
+#  port: 19530
+  # 集群模式
+  #cluster:
+  #  host: 172.31.121.86
+  #  port: 19530
+  #  shard:
+  #    - host: 172.31.121.86
+  #      port: 19530
+  #    - host: 172.31.121.86
+  #      port: 19530
+  #    - host: 172.31.121.86
+  #      port: 19530
+  #    - host: 172.31.121.86
+  #      port: 19530
+  #    - host: 172.31.121.86
+  #      port: 19530
+  #    - host: 172.31.121.86
+  #      port: 1953
+
+
+#用于批量自定义模型配置
+#app:
+#  ai:
+#    openai-configs:
+#      # 第一个自定义模型配置
+#      - name: my-model-1 # 为这个模型实例指定一个名称
+#        api-key: sk-your-key-for-model1 # 替换为你的第一个API Key
+#        base-url: https://api.openai.com/v1 # 模型的服务地址
+#        options:
+#          model: gpt-3.5-turbo # 使用的模型名称
+#          temperature: 0.7 # 模型温度参数# 第二个自定义模型配置
+#      - name: my-model-2 # 为这个模型实例指定另一个名称
+#        api-key: sk-your-key-for-model2 # 替换为你的第二个API Key
+#        base-url: https://custom-endpoint.openai.com/v1 # 可以是不同的服务地址或代理地址
+#        options:
+#          model: gpt-4o # 使用的不同模型名称
+#          temperature: 0.9 # 不同的温度参数
+#          topP: 0.95 # 其他选项
+
+
+file:
+  uploadDir: uploads

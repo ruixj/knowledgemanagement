@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huadian.dao.SysUsersMapper" >
+
+  
+  <sql id="Base_Column_List" >
+    ryid,
+    real_name userName,
+    password
+  </sql>
+  <select id="selectByPrimaryKey"
+          resultType="com.huadian.bean.SysUsers"
+          parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from sys_user
+    where ryid = #{id,jdbcType=VARCHAR} and delete_flg = 0
+  </select>
+
+</mapper>

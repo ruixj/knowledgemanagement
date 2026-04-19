@@ -1,0 +1,16 @@
+spring:
+  data:
+    # 添加Redis配置
+    redis:
+      host: 222.199.135.43
+      port: 6379
+      password: djai@123
+      #database: 1
+      client-type: lettuce
+
+redis:
+  key:
+    prefix:
+      session: "chat:session:"
+      user-sessions: "chat:user:sessions:"
+      messages: "chat:messages:"

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.huadian.dao.SysUsersMapper" >
+  <resultMap id="BaseResultMap" type="com.huadian.bean.SysUsers" >
+    <result column="ryid" property="ryid" jdbcType="VARCHAR" />
+    <result column="userName" property="userName" jdbcType="VARCHAR" />
+    <result column="password" property="password" jdbcType="VARCHAR" />
+  </resultMap>
+  
+  <sql id="Base_Column_List" >
+     ryid ryid,real_name userName, password
+  </sql>
+  <select id="selectByPrimaryKey"
+          resultMap="BaseResultMap"
+          parameterType="java.lang.String" >
+    select 
+    <include refid="Base_Column_List" />
+    from sys_user
+    where ryid = #{ryid,jdbcType=VARCHAR} and delete_flg = 0
+  </select>
+
+  <select id="selectByLoginIdShowPwd" resultMap="BaseResultMap" >
+    select ryid ,
+           real_name userName,
+          `password`
+    from sys_user
+    where
+      concat(real_name,replace(birthday,'-','')) = #{loginId,jdbcType=VARCHAR}
+    and delete_flg=0
+  </select>
+
+</mapper>
