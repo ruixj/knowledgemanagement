@@ -38,11 +38,8 @@ public class KnowledgeService {
         }
         else{
             KMOrderByBuilder kmOrderByBuilder = new KMOrderByBuilder();
+            kmOrderByBuilder.add("id","desc");
             String sortByStr = kmOrderByBuilder.build();
-            kmOrderByBuilder.add(
-                   "id",
-                    "desc"
-            );
             map.put("orderBy",sortByStr);
         }
 
@@ -52,5 +49,22 @@ public class KnowledgeService {
         kmPage.put("total",total);
         kmPage.put("page",KMPageData);
         return kmPage;
+    }
+
+    public void saveFile(Map<String,Object> params) {
+        kmMapper.saveFile(params);
+    }
+
+    public Map<String,Object> loadFilesByKB(Map<String,Object> params) {
+        List<Map<String,Object>> files = kmMapper.loadFilesByKB(params);
+        long total = kmMapper.loadFilesByKBCount(params);
+        Map<String,Object> result = new HashMap<>();
+        result.put("total", total);
+        result.put("page", files);
+        return result;
+    }
+
+    public void deleteFileById(Map<String,Object> params) {
+        kmMapper.deleteFileById(params);
     }
 }

@@ -41,20 +41,13 @@ public class SysLoginServiceImpl implements SysLoginService {
 
 	public Map Login( String loginName, String password) {
 		try {
-			SysUsers sysUser = sysUsersMapper.selectByLoginIdShowPwd(loginName);
+			SysUsers sysUser = sysUsersMapper.selectByRealNameAndPwd(loginName, password);
 			if( sysUser !=null ){
-				if( sysUser.getPassword().equals(password) ){
+				if( true ){   // password already verified in SQL query
 					String token= JwtUtil.createToken(sysUser);
 
-					//SysLogin sysLogin=new SysLogin();
-					//sysLogin.setLoginId(sysUser.getId());
-					//sysLogin.setToken(token);
-					//sysLogin.setExptime(new Date(new Date().getTime()+(60*60*1000)));
 					String uuid = UUID.randomUUID().toString();
-					//sysLogin.setUuid(uuid);
-					//sysLoginMapper.insert(sysLogin);
-					String key = redisKeyPrefix.getLoginsKeyPrefix() + sysUser.getRyid(); //uuid;
-					//Date date = new Date(new Date().getTime() + (60 * 60 * 1000));
+					String key = redisKeyPrefix.getLoginsKeyPrefix() + sysUser.getRyid();
 
 					Map result = new HashMap();
 					result.put("uuid",uuid);
@@ -64,7 +57,6 @@ public class SysLoginServiceImpl implements SysLoginService {
 
 					redisTemplate.opsForValue().set(key,result,  Duration.ofHours(10));
 
-					//systemLogService.addLog("用户登录", "登陆系统", sysLoginUser.getId());
 					return result;
 				}
 			}
@@ -73,6 +65,15 @@ public class SysLoginServiceImpl implements SysLoginService {
 			e.printStackTrace();
 			return null;
 		}
+	}
+
+	@Override
+	public void register(String username, String password) {
+		Map<String, Object> params = new HashMap<>();
+		params.put("ryid", UUID.randomUUID().toString());
+		params.put("real_name", username);
+		params.put("password", password);
+		sysUsersMapper.insertUser(params);
 	}
 	
 	

@@ -96,7 +96,7 @@ const validatePass = async (rule, value) => {
 const onFinish = async values => {
   loading.value = true
   try {
-    await api.post('/auth/register', {
+    await api.post('/api/auth/register', {
       username: values.username,
       password: values.password
     })

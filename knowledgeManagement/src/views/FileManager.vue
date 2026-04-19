@@ -184,9 +184,10 @@ import {
   PlaySquareOutlined
 } from '@ant-design/icons-vue'
 import { message, Upload, Progress, Modal, Form, Input, Select, DatePicker, Button, Table, Layout, Row, Col, Space, Divider, Tooltip, Popover, Tag, UploadDragger } from 'ant-design-vue'
-import { useBackendsStore } from '../state/appstate'
+import { useBackendsStore, useCurrentKBStore } from '../state/appstate'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n';
+import { loadFilesByKnowledgeBase, deleteFile as deleteFileApi, uploadFilesToKB } from '../api/service'
 
 export default {
   name: 'FileManager',
@@ -197,6 +198,7 @@ export default {
     console.log(t('welcome', { name: 'User' }));
     const backendsStore = useBackendsStore()
     const { endpoints } = storeToRefs(backendsStore)
+    const kbStore = useCurrentKBStore()
     console.log(endpoints.value.baseUrl)
     // 搜索表单
     const searchForm = reactive({
@@ -350,39 +352,24 @@ export default {
     }
 
     // 处理上传
-    const handleUpload = () => {
+    const handleUpload = async () => {
+      const kbId = kbStore.currentKB?.id
+      if (!kbId) {
+        message.warning('未选择知识库')
+        return
+      }
       uploading.value = true
-      // 模拟上传过程
-      uploadFiles.value.forEach(file => {
-        file.status = 'uploading'
-        file.percent = 0
-        
-        const interval = setInterval(() => {
-          file.percent += 10
-          if (file.percent >= 100) {
-            clearInterval(interval)
-            file.status = 'done'
-            // 添加到文件列表
-            files.value.unshift({
-              id: Date.now() + Math.random(),
-              name: file.name,
-              size: file.size,
-              type: getFileType(file.name),
-              uploader: '当前用户',
-              uploadTime: new Date().toLocaleString()
-            })
-            
-            // 检查是否所有文件都上传完成
-            if (uploadFiles.value.every(f => f.status === 'done')) {
-              uploading.value = false
-              message.success('所有文件上传成功')
-              setTimeout(() => {
-                uploadModalVisible.value = false
-              }, 1000)
-            }
-          }
-        }, 300)
-      })
+      try {
+        await uploadFilesToKB(kbId, fileList.value)
+        message.success('文件上传成功')
+        fileList.value = []
+        uploadModalVisible.value = false
+        loadFiles()
+      } catch (e) {
+        message.error('上传失败')
+      } finally {
+        uploading.value = false
+      }
     }
 
     // 获取文件类型
@@ -406,69 +393,56 @@ export default {
 
     // 下载文件
     const downloadFile = file => {
-      message.info('开始下载: ' + file.name)
-      // 实际应用中这里应该是真实的下载逻辑
+      const url = endpoints.value.baseUrl + file.storage_path
+      window.open(url, '_blank')
     }
 
     // 删除文件
-    const deleteFile = file => {
-      const index = files.value.findIndex(f => f.id === file.id)
-      if (index > -1) {
-        files.value.splice(index, 1)
+    const deleteFile = async file => {
+      try {
+        await deleteFileApi({ id: file.id })
         message.success('删除成功')
+        loadFiles()
+      } catch (e) {
+        message.error('删除失败')
+      }
+    }
+
+    // 加载文件列表
+    const loadFiles = async () => {
+      const kbId = kbStore.currentKB?.id
+      if (!kbId) return
+      loading.value = true
+      try {
+        const resdata = await loadFilesByKnowledgeBase({
+          knowledge_base_id: kbId,
+          page: pagination.current,
+          pageSize: pagination.pageSize,
+          original_name: searchForm.fileName || undefined,
+        })
+        if (resdata && resdata.data) {
+          files.value = (resdata.data.page || []).map(item => ({
+            id: item.id,
+            name: item.original_name || item.name,
+            size: item.size,
+            type: getFileType(item.original_name || item.name || ''),
+            uploader: item.uploaded_by || '',
+            uploadTime: item.uploaded_at || '',
+            storage_path: item.storage_path,
+            mime_type: item.mime_type,
+          }))
+          pagination.total = Number(resdata.data.total) || 0
+        }
+      } catch (e) {
+        console.error(e)
+      } finally {
+        loading.value = false
       }
     }
 
     // 初始化加载文件列表
     onMounted(() => {
-      loading.value = true
-      // 模拟API调用
-      setTimeout(() => {
-        files.value = [
-          {
-            id: 1,
-            name: '项目计划书.docx',
-            size: 1024 * 1024 * 2.5,
-            type: 'doc',
-            uploader: '张三',
-            uploadTime: '2023-06-15 10:30:25'
-          },
-          {
-            id: 2,
-            name: '产品演示.mp4',
-            size: 1024 * 1024 * 150,
-            type: 'video',
-            uploader: '李四',
-            uploadTime: '2023-06-16 14:20:18'
-          },
-          {
-            id: 3,
-            name: '会议记录.pdf',
-            size: 1024 * 1024 * 5.2,
-            type: 'doc',
-            uploader: '王五',
-            uploadTime: '2023-06-17 09:15:42'
-          },
-          {
-            id: 4,
-            name: '公司Logo.png',
-            size: 1024 * 512,
-            type: 'image',
-            uploader: '赵六',
-            uploadTime: '2023-06-18 16:45:30'
-          },
-          {
-            id: 5,
-            name: '背景音乐.mp3',
-            size: 1024 * 1024 * 8.7,
-            type: 'audio',
-            uploader: '钱七',
-            uploadTime: '2023-06-19 11:20:15'
-          }
-        ]
-        loading.value = false
-        pagination.total = files.value.length
-      }, 800)
+      loadFiles()
     })
 
     return {
@@ -492,6 +466,7 @@ export default {
       formatFileSize,
       downloadFile,
       deleteFile,
+      loadFiles,
       FileIcon,
       getFileIcon
     }
