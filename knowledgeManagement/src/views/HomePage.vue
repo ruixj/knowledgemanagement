@@ -19,28 +19,31 @@
                 </div>
                 
                 <div class="cards-container">
+                  <a-spin v-if="loading" />
+                  <a-empty v-else-if="documents.length === 0" description="暂无知识库" />
                   <a-card 
+                    v-else
                     v-for="doc in documents" 
                     :key="doc.id"
                     class="project-card"
-                    @click="handleCardClick(doc, 'documents')"
+                    @click="handleCardClick(doc)"
                   >
                     <div class="card-body">
                       <div class="card-icon">
-                        <i :class="doc.icon"></i>
+                        <i class="fa-solid fa-database"></i>
                       </div>
-                      <h3 class="card-title">{{ doc.title }}</h3>
-                      <p class="card-description">{{ doc.description }}</p>
+                      <h3 class="card-title">{{ doc.name }}</h3>
+                      <p class="card-description">{{ doc.description || '暂无描述' }}</p>
                     </div>
                     <div class="card-footer">
-                      <a-tag class="tag">{{ doc.tag }}</a-tag>
-                      <span>共 {{ doc.count }} 篇</span>
+                      <a-tag class="tag">{{ doc.creatorName }}</a-tag>
+                      <span>共 {{ doc.file_count }} 篇</span>
                     </div>
                   </a-card>
                   
                   <a-card 
                     class="project-card view-all-card"
-                    @click="handleViewAll('documents')"
+                    @click="handleViewAll()"
                   >
                     <div class="card-body">
                       <div class="card-icon">
@@ -105,56 +108,18 @@
 import { createApp, ref, reactive, onMounted,computed } from 'vue';
 import { useAuthStore } from '../utils/auth';
 import { useRouter } from 'vue-router';
+import { loadKnowledgeBaseByPage } from '../api/service';
 const authStore = useAuthStore()
+const router = useRouter()
 // 用户信息
 const username = computed(() =>{
   console.log('username:', authStore.user.data?.username)
   return authStore.user.data?.username || '游客'
 } )
 
-// 文档管理数据
-const documents = ref([
-    {
-    id: 1,
-    title: '技术文档',
-    description: '包含所有技术规范、API文档和开发指南',
-    icon: 'fa-solid fa-file-code',
-    count: 128,
-    tag: '技术',
-    updatedBy: '李工程师',
-    updatedAt: '2023-06-15'
-    },
-    {
-    id: 2,
-    title: '产品手册',
-    description: '产品功能说明、用户指南和操作手册',
-    icon: 'fa-solid fa-book',
-    count: 64,
-    tag: '产品',
-    updatedBy: '王产品经理',
-    updatedAt: '2023-06-10'
-    },
-    {
-    id: 3,
-    title: '培训材料',
-    description: '新员工培训、技能提升相关学习资料',
-    icon: 'fa-solid fa-graduation-cap',
-    count: 42,
-    tag: '培训',
-    updatedBy: '赵培训师',
-    updatedAt: '2023-06-05'
-    },
-    {
-    id: 4,
-    title: '数据报表',
-    description: '业务数据分析报告和统计报表',
-    icon: 'fa-solid fa-chart-bar',
-    count: 36,
-    tag: '数据',
-    updatedBy: '钱分析师',
-    updatedAt: '2023-06-12'
-    }
-]);
+// 知识库列表数据
+const documents = ref([]);
+const loading = ref(false);
 
 // 知识分类数据
 const categories = ref([
@@ -200,23 +165,32 @@ const categories = ref([
     }
 ]);
 
-// 处理卡片点击
-const handleCardClick = (item, type) => {
-    message.success(`正在跳转到 ${item.title}`);
-    // 实际项目中这里应该进行路由跳转
-    console.log(`跳转到: ${type}/${item.id}`);
+// 处理卡片点击，跳转到知识库详情
+const handleCardClick = (item) => {
+    router.push('/knowledgedetail');
 };
 
 // 处理查看所有点击
-const handleViewAll = (type) => {
-    message.info(`查看所有${type === 'documents' ? '文档' : '分类'}`);
-    // 实际项目中这里应该进行路由跳转
-    console.log(`跳转到: /${type}`);
+const handleViewAll = () => {
+    router.push({ name: 'KnowledgeManager' });
 };
 
-// 模拟组件挂载后的操作
-onMounted(() => {
-    console.log('首页组件已加载');
+// 加载最新5个知识库
+onMounted(async () => {
+    loading.value = true;
+    try {
+        const retData = await loadKnowledgeBaseByPage({
+            page: 0,
+            pageSize: 5,
+            owner: authStore.user.data?.ryid,
+        });
+        const page = retData?.data || {};
+        documents.value = page.page || [];
+    } catch (error) {
+        console.error('加载知识库失败:', error);
+    } finally {
+        loading.value = false;
+    }
 });
 </script>
 <style scoped>

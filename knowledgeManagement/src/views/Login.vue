@@ -130,11 +130,8 @@ const onFinish = async values => {
      message.success('登录成功')
      router.push({name:"app"})
   } catch (error) {
-    if (error.response && error.response.data && error.response.data.message) {
-      errorMessage.value = error.response.data.message
-    } else {
-      errorMessage.value = '登录失败，请检查网络连接后重试'
-    }
+    errorMessage.value = error.message || '登录失败，请检查网络连接后重试'
+    message.error(errorMessage.value)
     console.error('Login error:', error)
   } finally {
     loading.value = false

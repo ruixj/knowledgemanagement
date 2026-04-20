@@ -24,7 +24,7 @@ export const login = async (credentials) => {
     }   
     return resdata.data;
   } catch (error) {
-    throw new Error(error.response?.data?.message || '登录失败');
+    throw new Error(error.message || error.response?.data?.message || '登录失败');
   }
 };
 

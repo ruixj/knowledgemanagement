@@ -4,16 +4,16 @@ import env from '../config/env.js'
 
 export const useBackendsStore = defineStore('BackendsStore',  () => {
     let backendServices = {
-        "baseUrl": "http://127.0.0.1:8080",
+        "baseUrl": "",
     }
     if (env == "local"){
         backendServices  = {
-           "baseUrl": "http://127.0.0.1:8080",
+           "baseUrl": "",  // 本地开发走 Vite 代理，使用相对路径
         }
     }
     else{
        backendServices = {
-            "baseUrl": "http://127.0.0.1:8080",
+            "baseUrl": "http://127.0.0.1:8080",  // 生产环境直连后端
         }
     }
     const endpoints = reactive(backendServices)
