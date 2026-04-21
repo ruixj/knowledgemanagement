@@ -67,7 +67,7 @@ export const uploadFilesToKB = async (knowledgeBaseId, files) => {
     try {
         const formData = new FormData();
         files.forEach(file => {
-            formData.append('file', file);
+            formData.append('file', file.originFileObj || file);
         });
         const resdata = await httpService.post(
             `/api/process/file?knowledge_base_id=${knowledgeBaseId}`,
