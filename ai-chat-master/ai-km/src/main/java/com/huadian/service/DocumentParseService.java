@@ -90,7 +90,7 @@ public class DocumentParseService {
 
             // 5. 使用 EmbeddingModel 批量生成向量
             List<String> texts = chunks.stream()
-                    .map(Document::getContent)
+                    .map(Document::getText)
                     .collect(Collectors.toList());
             log.info("Generating embeddings for {} chunks via EmbeddingModel...", texts.size());
             List<float[]> embeddings = embeddingModel.embed(texts);
@@ -102,7 +102,7 @@ public class DocumentParseService {
                 Document original = chunks.get(i);
                 Document withEmbedding = Document.builder()
                         .id(original.getId())
-                        .text(original.getContent())
+                        .text(original.getText())
                         .metadata(original.getMetadata())
                         .embedding(embeddings.get(i))
                         .build();
