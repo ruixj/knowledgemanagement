@@ -262,10 +262,12 @@ import {
 } from '../api/service'
 
 import {useAuthStore} from '../utils/auth'
+import { useCurrentKBStore } from '../state/appstate'
 
 export default {
   name: 'KnowledgeManager',
   setup(){   
+    const kbStore = useCurrentKBStore()
     // 响应式数据
     const knowledgeList = ref([]);
     const currentPage = ref(1);
@@ -401,10 +403,8 @@ export default {
     
     const viewKnowledge = (item) => {
       console.log('查看知识库:', item);
-      // 实际应用中这里应该跳转到知识库详情页面
-      //alert(`查看知识库: ${item.title}`);
+      kbStore.setCurrentKB({ id: item.id, name: item.name })
       router.push('/knowledgedetail')
-      
     };
     
     const editKnowledge = (item) => {

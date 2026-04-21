@@ -109,8 +109,10 @@ import { createApp, ref, reactive, onMounted,computed } from 'vue';
 import { useAuthStore } from '../utils/auth';
 import { useRouter } from 'vue-router';
 import { loadKnowledgeBaseByPage } from '../api/service';
+import { useCurrentKBStore } from '../state/appstate';
 const authStore = useAuthStore()
 const router = useRouter()
+const kbStore = useCurrentKBStore()
 // 用户信息
 const username = computed(() =>{
   console.log('username:', authStore.user.data?.username)
@@ -167,6 +169,7 @@ const categories = ref([
 
 // 处理卡片点击，跳转到知识库详情
 const handleCardClick = (item) => {
+    kbStore.setCurrentKB({ id: item.id, name: item.name })
     router.push('/knowledgedetail');
 };
 
