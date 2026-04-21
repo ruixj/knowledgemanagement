@@ -426,7 +426,7 @@ export default {
             name: item.original_name || item.name,
             size: item.size,
             type: getFileType(item.original_name || item.name || ''),
-            uploader: item.uploaded_by || '',
+            uploader: item.uploader_name || item.uploaded_by || '',
             uploadTime: item.uploaded_at || '',
             storage_path: item.storage_path,
             mime_type: item.mime_type,

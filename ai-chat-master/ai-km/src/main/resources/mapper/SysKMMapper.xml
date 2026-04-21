@@ -88,14 +88,16 @@
    </insert>
 
    <select id="loadFilesByKB" parameterType="java.util.Map" resultType="java.util.Map">
-       SELECT id, name, original_name, file_type, mime_type, size, storage_path, status, uploaded_at, uploaded_by
-       FROM sys_ai_files
-       WHERE knowledge_base_id = #{knowledge_base_id}
-         AND status != 'deleted'
+       SELECT f.id, f.name, f.original_name, f.file_type, f.mime_type, f.size, f.storage_path, f.status, f.uploaded_at, f.uploaded_by,
+              u.real_name AS uploader_name
+       FROM sys_ai_files f
+       LEFT JOIN sys_user u ON u.ryid = f.uploaded_by
+       WHERE f.knowledge_base_id = #{knowledge_base_id}
+         AND f.status != 'deleted'
          <if test="original_name != null and original_name != ''">
-             AND original_name LIKE CONCAT('%', #{original_name}, '%')
+             AND f.original_name LIKE CONCAT('%', #{original_name}, '%')
          </if>
-       ORDER BY uploaded_at DESC
+       ORDER BY f.uploaded_at DESC
        LIMIT #{offset}, #{pageSize}
    </select>
 
