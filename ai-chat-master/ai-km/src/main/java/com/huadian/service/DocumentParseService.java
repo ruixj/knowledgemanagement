@@ -15,11 +15,9 @@ import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import com.huadian.rag.etl.splitter.ChineseTokenTextSplitter;
 
@@ -88,37 +86,19 @@ public class DocumentParseService {
                 chunk.getMetadata().put("file_name", fileName);
             }
 
-            // 5. 使用 EmbeddingModel 批量生成向量
-            List<String> texts = chunks.stream()
-                    .map(Document::getText)
-                    .collect(Collectors.toList());
-            log.info("Generating embeddings for {} chunks via EmbeddingModel...", texts.size());
-            List<float[]> embeddings = embeddingModel.embed(texts);
-            log.info("Embedding done, dimension={}", embeddings.isEmpty() ? 0 : embeddings.get(0).length);
+            // 5. 写入向量库（VectorStore 内部自动调用 EmbeddingModel 生成向量）
+            log.info("Generating embeddings and saving {} chunks to vector store via EmbeddingModel...", chunks.size());
+            vectorStore.add(chunks);
+            log.info("Saved {} chunks to vector store for file id={}", chunks.size(), fileId);
 
-            // 6. 将向量写回 Document，再批量存入向量库
-            List<Document> embeddedChunks = new ArrayList<>();
-            for (int i = 0; i < chunks.size(); i++) {
-                Document original = chunks.get(i);
-                Document withEmbedding = Document.builder()
-                        .id(original.getId())
-                        .text(original.getText())
-                        .metadata(original.getMetadata())
-                        .embedding(embeddings.get(i))
-                        .build();
-                embeddedChunks.add(withEmbedding);
-            }
-            vectorStore.add(embeddedChunks);
-            log.info("Saved {} chunks to vector store for file id={}", embeddedChunks.size(), fileId);
-
-            // 7. 更新状态为 done，记录 chunk 数量
+            // 6. 更新状态为 done，记录 chunk 数量
             Map<String, Object> doneParams = new HashMap<>();
             doneParams.put("id", fileId);
             doneParams.put("parsing_status", "done");
-            doneParams.put("chunk_count", embeddedChunks.size());
+            doneParams.put("chunk_count", chunks.size());
             kmMapper.updateParseResult(doneParams);
 
-            log.info("Parsing done, file id={}, chunks={}", fileId, embeddedChunks.size());
+            log.info("Parsing done, file id={}, chunks={}", fileId, chunks.size());
 
         } catch (Exception e) {
             log.error("Parsing failed, file id={}", fileId, e);
