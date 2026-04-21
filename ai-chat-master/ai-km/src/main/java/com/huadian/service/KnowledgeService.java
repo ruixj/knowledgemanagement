@@ -13,6 +13,9 @@ import java.util.Map;
 public class KnowledgeService {
     @Autowired
     SysKMMapper kmMapper;
+
+    @Autowired
+    DocumentParseService documentParseService;
    public void createKnowledgeBase(Map<String,Object> data){
 
         kmMapper.createKM(data);
@@ -69,8 +72,9 @@ public class KnowledgeService {
     }
 
     public void parseFile(Map<String,Object> params) {
-        // 将状态设为 processing，触发后续异步解析流程
-        kmMapper.parseFile(params);
+        Long fileId = Long.valueOf(params.get("id").toString());
+        // 异步执行解析
+        documentParseService.parseAsync(fileId);
     }
 
     public void toggleFileEnabled(Map<String,Object> params) {

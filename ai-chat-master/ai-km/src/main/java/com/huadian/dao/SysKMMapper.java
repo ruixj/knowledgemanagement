@@ -25,4 +25,6 @@ public interface SysKMMapper {
     int updateParseResult(Map<String,Object> params);
 
     int toggleFileEnabled(Map<String,Object> params);
+
+    Map<String,Object> getFileById(Long id);
 }

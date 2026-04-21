@@ -133,4 +133,10 @@
        WHERE id = #{id}
    </update>
 
+   <select id="getFileById" parameterType="long" resultType="java.util.Map">
+       SELECT id, name, original_name, file_type, storage_path, knowledge_base_id, parsing_status, chunk_count, is_enabled
+       FROM sys_ai_files
+       WHERE id = #{id}
+   </select>
+
 </mapper>
