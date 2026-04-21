@@ -27,7 +27,7 @@ public class PgVectorConfig {
     )
     {
         return PgVectorStore.builder(jdbcTemplate, embeddingModel)
-                .dimensions(1536)                    // Optional: defaults to model dimensions or 1536
+                .dimensions(1024)                    // 与 hunyuan-embedding 维度保持一致
                 .distanceType(COSINE_DISTANCE)       // Optional: defaults to COSINE_DISTANCE
                 .indexType(HNSW)                     // Optional: defaults to HNSW
                 .initializeSchema(true)              // Optional: defaults to false
