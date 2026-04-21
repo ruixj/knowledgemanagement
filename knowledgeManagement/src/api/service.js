@@ -79,3 +79,33 @@ export const uploadFilesToKB = async (knowledgeBaseId, files) => {
         console.log(error);
     }
 };
+
+
+export const parseFile = async (data) => {
+    try {
+        const resdata = await httpService.post('/api/process', data, {
+            headers: {
+                'action': 'parseFile',
+                'Content-Type': 'application/json'
+            }
+        });
+        return resdata;
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+
+export const toggleFileEnabled = async (data) => {
+    try {
+        const resdata = await httpService.post('/api/process', data, {
+            headers: {
+                'action': 'toggleFileEnabled',
+                'Content-Type': 'application/json'
+            }
+        });
+        return resdata;
+    } catch (error) {
+        console.log(error);
+    }
+};

@@ -87,9 +87,30 @@
               <template v-else-if="column.key === 'size'">
                 {{ formatFileSize(record.size) }}
               </template>
+              <template v-else-if="column.key === 'parsing_status'">
+                <a-tag :color="parsingStatusColor(record.parsing_status)">
+                  {{ parsingStatusText(record.parsing_status) }}
+                </a-tag>
+              </template>
+              <template v-else-if="column.key === 'is_enabled'">
+                <a-switch
+                  :checked="!!record.is_enabled"
+                  @change="(val) => handleToggleEnabled(record, val)"
+                  checked-children="启用"
+                  un-checked-children="禁用"
+                />
+              </template>
               <template v-else-if="column.key === 'actions'">
                 <a-button type="link" size="small" @click="downloadFile(record)">
                   下载
+                </a-button>
+                <a-button
+                  type="link"
+                  size="small"
+                  :disabled="record.parsing_status === 'processing'"
+                  @click="handleParseFile(record)"
+                >
+                  解析
                 </a-button>
                 <a-button type="link" size="small" danger @click="deleteFile(record)">
                   删除
@@ -187,7 +208,7 @@ import { message, Upload, Progress, Modal, Form, Input, Select, DatePicker, Butt
 import { useBackendsStore, useCurrentKBStore } from '../state/appstate'
 import { storeToRefs } from 'pinia'
 import { useI18n } from 'vue-i18n';
-import { loadFilesByKnowledgeBase, deleteFile as deleteFileApi, uploadFilesToKB } from '../api/service'
+import { loadFilesByKnowledgeBase, deleteFile as deleteFileApi, uploadFilesToKB, parseFile as parseFileApi, toggleFileEnabled as toggleFileEnabledApi } from '../api/service'
 
 export default {
   name: 'FileManager',
@@ -264,7 +285,24 @@ export default {
         title: '上传时间',
         dataIndex: 'uploadTime',
         key: 'uploadTime',
-        width: '20%'
+        width: '12%'
+      },
+      {
+        title: 'Chunk数',
+        dataIndex: 'chunk_count',
+        key: 'chunk_count',
+        width: '8%'
+      },
+      {
+        title: '解析状态',
+        dataIndex: 'parsing_status',
+        key: 'parsing_status',
+        width: '10%'
+      },
+      {
+        title: '是否启用',
+        key: 'is_enabled',
+        width: '10%'
       },
       {
         title: '操作',
@@ -397,6 +435,40 @@ export default {
       window.open(url, '_blank')
     }
 
+    // 解析状态文本
+    const parsingStatusText = (status) => {
+      const map = { pending: '待解析', processing: '解析中', done: '已完成', error: '解析失败' }
+      return map[status] || status
+    }
+
+    // 解析状态颜色
+    const parsingStatusColor = (status) => {
+      const map = { pending: 'default', processing: 'processing', done: 'success', error: 'error' }
+      return map[status] || 'default'
+    }
+
+    // 触发解析
+    const handleParseFile = async (file) => {
+      try {
+        await parseFileApi({ id: file.id })
+        message.success('解析任务已提交')
+        file.parsing_status = 'processing'
+      } catch (e) {
+        message.error('提交解析失败')
+      }
+    }
+
+    // 切换启用状态
+    const handleToggleEnabled = async (file, val) => {
+      try {
+        await toggleFileEnabledApi({ id: file.id, is_enabled: val ? 1 : 0 })
+        file.is_enabled = val ? 1 : 0
+        message.success(val ? '已启用' : '已禁用')
+      } catch (e) {
+        message.error('状态更新失败')
+      }
+    }
+
     // 删除文件
     const deleteFile = async file => {
       try {
@@ -430,6 +502,9 @@ export default {
             uploadTime: item.uploaded_at || '',
             storage_path: item.storage_path,
             mime_type: item.mime_type,
+            chunk_count: item.chunk_count || 0,
+            parsing_status: item.parsing_status || 'pending',
+            is_enabled: item.is_enabled !== undefined ? item.is_enabled : 1,
           }))
           pagination.total = Number(resdata.data.total) || 0
         }
@@ -468,7 +543,11 @@ export default {
       deleteFile,
       loadFiles,
       FileIcon,
-      getFileIcon
+      getFileIcon,
+      parsingStatusText,
+      parsingStatusColor,
+      handleParseFile,
+      handleToggleEnabled
     }
   }
 }

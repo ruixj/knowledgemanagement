@@ -67,4 +67,13 @@ public class KnowledgeService {
     public void deleteFileById(Map<String,Object> params) {
         kmMapper.deleteFileById(params);
     }
+
+    public void parseFile(Map<String,Object> params) {
+        // 将状态设为 processing，触发后续异步解析流程
+        kmMapper.parseFile(params);
+    }
+
+    public void toggleFileEnabled(Map<String,Object> params) {
+        kmMapper.toggleFileEnabled(params);
+    }
 }

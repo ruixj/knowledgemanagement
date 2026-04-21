@@ -19,4 +19,10 @@ public interface SysKMMapper {
     long loadFilesByKBCount(Map<String,Object> params);
 
     int deleteFileById(Map<String,Object> params);
+
+    int parseFile(Map<String,Object> params);
+
+    int updateParseResult(Map<String,Object> params);
+
+    int toggleFileEnabled(Map<String,Object> params);
 }

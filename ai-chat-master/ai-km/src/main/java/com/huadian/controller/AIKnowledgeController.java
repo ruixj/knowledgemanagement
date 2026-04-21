@@ -78,6 +78,19 @@ public class AIKnowledgeController {
                 knowledgeService.deleteFileById(params);
                 return ErrorUtil.retErrMsg(ErrorConstant.SUCCESS, "文件删除成功");
             }
+            if (action.equals("parseFile")) {
+                Map<String,Object> params = new HashMap<>();
+                params.put("id", map.get("id"));
+                knowledgeService.parseFile(params);
+                return ErrorUtil.retErrMsg(ErrorConstant.SUCCESS, "解析任务已提交");
+            }
+            if (action.equals("toggleFileEnabled")) {
+                Map<String,Object> params = new HashMap<>();
+                params.put("id", map.get("id"));
+                params.put("is_enabled", map.get("is_enabled"));
+                knowledgeService.toggleFileEnabled(params);
+                return ErrorUtil.retErrMsg(ErrorConstant.SUCCESS, "状态更新成功");
+            }
             else {
                 throw new BaseException2("invalid.action.error", new Object[]{action});
             }

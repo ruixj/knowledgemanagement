@@ -83,12 +83,13 @@
    </select>
 
    <insert id="saveFile" parameterType="java.util.Map" useGeneratedKeys="true" keyProperty="id">
-       INSERT INTO sys_ai_files (name, original_name, file_type, mime_type, size, storage_path, status, uploaded_by, knowledge_base_id)
-       VALUES (#{name}, #{original_name}, #{file_type}, #{mime_type}, #{size}, #{storage_path}, 'active', #{uploaded_by}, #{knowledge_base_id})
+       INSERT INTO sys_ai_files (name, original_name, file_type, mime_type, size, storage_path, status, uploaded_by, knowledge_base_id, chunk_count, parsing_status, is_enabled)
+       VALUES (#{name}, #{original_name}, #{file_type}, #{mime_type}, #{size}, #{storage_path}, 'active', #{uploaded_by}, #{knowledge_base_id}, 0, 'pending', 1)
    </insert>
 
    <select id="loadFilesByKB" parameterType="java.util.Map" resultType="java.util.Map">
-       SELECT f.id, f.name, f.original_name, f.file_type, f.mime_type, f.size, f.storage_path, f.status, f.uploaded_at, f.uploaded_by,
+       SELECT f.id, f.name, f.original_name, f.file_type, f.mime_type, f.size, f.storage_path, f.status,
+              f.uploaded_at, f.uploaded_by, f.chunk_count, f.parsing_status, f.is_enabled,
               u.real_name AS uploader_name
        FROM sys_ai_files f
        LEFT JOIN sys_user u ON u.ryid = f.uploaded_by
@@ -115,6 +116,21 @@
        UPDATE sys_ai_files SET status = 'deleted'
        WHERE id = #{id}
          AND uploaded_by = #{uploaded_by}
+   </update>
+
+   <update id="parseFile" parameterType="java.util.Map">
+       UPDATE sys_ai_files SET parsing_status = 'processing'
+       WHERE id = #{id}
+   </update>
+
+   <update id="updateParseResult" parameterType="java.util.Map">
+       UPDATE sys_ai_files SET parsing_status = #{parsing_status}, chunk_count = #{chunk_count}
+       WHERE id = #{id}
+   </update>
+
+   <update id="toggleFileEnabled" parameterType="java.util.Map">
+       UPDATE sys_ai_files SET is_enabled = #{is_enabled}
+       WHERE id = #{id}
    </update>
 
 </mapper>
