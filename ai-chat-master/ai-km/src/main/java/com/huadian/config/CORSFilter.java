@@ -16,10 +16,11 @@ public class CORSFilter implements Filter {
         HttpServletResponse res = (HttpServletResponse) response;
         res.addHeader("Access-Control-Allow-Credentials", "true");
         res.addHeader("Access-Control-Allow-Origin", "*");
-        res.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT");
-        res.addHeader("Access-Control-Allow-Headers", "Content-Type,X-CAF-Authorization-Token,sessionToken,X-TOKEN");
+        res.addHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS");
+        res.addHeader("Access-Control-Allow-Headers", "Content-Type,Authorization,ryid,action,X-CAF-Authorization-Token,sessionToken,X-TOKEN");
+        res.addHeader("Access-Control-Max-Age", "3600");
         if (((HttpServletRequest) request).getMethod().equals("OPTIONS")) {
-            response.getWriter().println("ok");
+            response.setStatus(HttpServletResponse.SC_OK);
             return;
         }
         chain.doFilter(request, response);

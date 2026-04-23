@@ -18,6 +18,8 @@ public interface ErrorConstant {
 
     String FAILED_TO_SAVEFILE = "failed.to.savefile";
 
+    String UNSUPPORTED_FILE_TYPE = "unsupported.file.type";
+
     String USER_OR_PWD_ERR = "user.not.exists";
 
 }

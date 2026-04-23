@@ -14,12 +14,28 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @RestController
 public class AIKnowledgeController {
+
+    // TikaDocumentReader 支持的扩展名白名单
+    private static final Set<String> SUPPORTED_EXTENSIONS = new HashSet<>(Arrays.asList(
+        "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx",
+        "txt", "md", "html", "htm", "xml", "json", "csv",
+        "rtf", "odt", "ods", "odp", "epub"
+    ));
+
+    private boolean isSupportedFile(String fileName) {
+        if (fileName == null || !fileName.contains(".")) return false;
+        String ext = fileName.substring(fileName.lastIndexOf('.') + 1).toLowerCase();
+        return SUPPORTED_EXTENSIONS.contains(ext);
+    }
 
     @Autowired
     KnowledgeService knowledgeService;
@@ -139,6 +155,10 @@ public class AIKnowledgeController {
 
                 try {
                     for (MultipartFile file: files){
+                        if (!isSupportedFile(file.getOriginalFilename())) {
+                            throw new BaseException2(ErrorConstant.UNSUPPORTED_FILE_TYPE,
+                                    new String[]{file.getOriginalFilename()});
+                        }
                         String serverPath = fileService.storeFile(file);
                         result.put(file.getOriginalFilename(), serverPath);
 

@@ -134,13 +134,14 @@
             :before-upload="beforeUpload"
             @remove="handleRemove"
             @drop="handleDrop"
+            accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.md,.html,.htm,.xml,.json,.csv,.rtf,.odt,.ods,.odp,.epub"
             class="upload-dragger"
           >
             <p class="ant-upload-drag-icon">
               <inbox-outlined />
             </p>
             <p class="ant-upload-text">点击或拖拽文件到此处上传</p>
-            <p class="ant-upload-hint">支持单个或批量上传，严禁上传公司数据或其他敏感文件</p>
+            <p class="ant-upload-hint">支持 PDF / Word / Excel / PPT / TXT / MD / HTML / XML / JSON / CSV / RTF / ODP / EPUB</p>
           </a-upload-dragger>
 
           <div class="upload-list">
@@ -363,8 +364,20 @@ export default {
       fileList.value = []
     }
 
+    // Tika 支持的文件类型
+    const SUPPORTED_EXTENSIONS = new Set([
+      'pdf', 'doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx',
+      'txt', 'md', 'html', 'htm', 'xml', 'json', 'csv',
+      'rtf', 'odt', 'ods', 'odp', 'epub'
+    ])
+
     // 上传前处理
     const beforeUpload = file => {
+      const ext = file.name.split('.').pop().toLowerCase()
+      if (!SUPPORTED_EXTENSIONS.has(ext)) {
+        message.error(`不支持的文件类型：${file.name}，仅支持 PDF/Word/Excel/PPT/TXT/MD/HTML/XML/JSON/CSV/RTF/EPUB`)
+        return false
+      }
       fileList.value = [...fileList.value, file]
       return false
     }

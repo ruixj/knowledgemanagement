@@ -47,9 +47,9 @@ CREATE TABLE sys_ai_files (
 );
 
 -- 迁移：为 sys_ai_files 增加解析相关字段
--- ALTER TABLE sys_ai_files ADD COLUMN chunk_count INT DEFAULT 0 COMMENT '文件切片数量';
--- ALTER TABLE sys_ai_files ADD COLUMN parsing_status ENUM('pending','processing','done','error') DEFAULT 'pending' COMMENT '解析状态';
--- ALTER TABLE sys_ai_files ADD COLUMN is_enabled TINYINT(1) DEFAULT 1 COMMENT '是否启用';
+ALTER TABLE sys_ai_files ADD COLUMN chunk_count INT DEFAULT 0 COMMENT '文件切片数量';
+ALTER TABLE sys_ai_files ADD COLUMN parsing_status ENUM('pending','processing','done','error') DEFAULT 'pending' COMMENT '解析状态';
+ALTER TABLE sys_ai_files ADD COLUMN is_enabled TINYINT(1) DEFAULT 1 COMMENT '是否启用';
 
 -- 文件元数据表（用于存储文件扩展信息）
 CREATE TABLE sys_ai_file_metadata (

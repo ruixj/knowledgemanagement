@@ -87,6 +87,11 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
 
     @Override
     protected boolean shouldNotFilter(HttpServletRequest request) {
+        // 放行所有 OPTIONS 预检请求（CORS preflight）
+        if ("OPTIONS".equalsIgnoreCase(request.getMethod())) {
+            return true;
+        }
+
         String path = request.getRequestURI();
         String contextPath = request.getContextPath();
 
@@ -98,10 +103,7 @@ public class TokenAuthenticationFilter extends OncePerRequestFilter {
         // 检查是否在排除列表中
         String finalPath = path;
         return EXCLUDE_URLS.stream()
-                .anyMatch(exclude -> {
-                    boolean b = finalPath.startsWith(exclude);
-                    return b;
-                });
+                .anyMatch(exclude -> finalPath.startsWith(exclude));
     }
 
     private String extractToken(HttpServletRequest request) {
