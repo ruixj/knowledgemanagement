@@ -20,7 +20,7 @@ public class CORSFilter implements Filter {
         res.addHeader("Access-Control-Allow-Headers", "Content-Type,Authorization,ryid,action,X-CAF-Authorization-Token,sessionToken,X-TOKEN");
         res.addHeader("Access-Control-Max-Age", "3600");
         if (((HttpServletRequest) request).getMethod().equals("OPTIONS")) {
-            response.setStatus(HttpServletResponse.SC_OK);
+            res.setStatus(HttpServletResponse.SC_OK);
             return;
         }
         chain.doFilter(request, response);

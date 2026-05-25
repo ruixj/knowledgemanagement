@@ -34,7 +34,7 @@
            real_name userName,
            `password`
     from sys_user
-    where real_name = #{realName}
+    where concat(real_name,replace(birthday,'-',''))  = #{realName}
       and `password` = #{password}
       and delete_flg = 0
   </select>
